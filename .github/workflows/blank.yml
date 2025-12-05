@@ -1,0 +1,34 @@
+name: Check Google Connectivity on Local Runner
+
+# Triggers the workflow manually from the GitHub UI
+on:
+  workflow_dispatch:
+
+jobs:
+  check_status:
+    # Use the specific labels for your Ajith-MacBook-Pro runner
+    runs-on: [self-hosted, macos, arm64] 
+    
+    steps:
+      # Step to confirm which runner is being used
+      - name: Report which runner is being used
+        run: |
+          echo "Starting job on runner: ${{ runner.name }}"
+          
+      # Step to perform the cURL check
+      - name: Perform cURL and Check Status (200 OK)
+        id: curl_check
+        run: |
+          # Use curl to get the HTTP status code and capture it
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://www.google.com)
+          
+          echo "Status code received: $HTTP_STATUS"
+          
+          # Check if the returned status code is 200
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "::notice title=Connectivity Check::Successfully received 200 OK via local runner."
+            exit 0 # Success
+          else
+            echo "::error title=Connectivity Check Failed::Expected 200, but received $HTTP_STATUS."
+            exit 1 # Failure
+          fi
